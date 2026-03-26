@@ -40,7 +40,7 @@ import {
   Phone,
   Wrench,
 } from "lucide-react";
-import { FaEnvelope, FaLinkedinIn, FaPhoneAlt } from "react-icons/fa";
+import { FaEnvelope, FaLinkedinIn, FaPhoneAlt, FaWhatsapp } from "react-icons/fa";
 import { navLinks, experiences, projects, skillGroups, education } from "@/components/portfolio/data";
 import { SectionWrapper } from "@/components/portfolio/section-wrapper";
 import { Button } from "@/components/ui/button";
@@ -67,6 +67,11 @@ const floatTransition = {
 };
 
 const welcomeKeywords = ["ERP", "Automation", "AI Systems", "Business Impact", "Odoo"];
+const whatsAppPrompts = [
+  "Need Odoo magic? Ping me.",
+  "Fast replies. Zero corporate drama.",
+  "Let's talk ERP, AI, or chai.",
+];
 
 const socialLinks = [
   {
@@ -76,7 +81,7 @@ const socialLinks = [
   },
   {
     name: "LinkedIn",
-    href: "https://www.linkedin.com",
+    href: "https://www.linkedin.com/in/welcometohassanraza/",
     icon: FaLinkedinIn,
   },
   {
@@ -123,6 +128,9 @@ export function PortfolioPage() {
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 });
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
+  const [whatsAppPromptIndex, setWhatsAppPromptIndex] = useState(0);
+  const whatsappHref = "https://wa.me/923230701210?text=Assalamualaikum%20Hassan%2C%20I%20visited%20your%20portfolio%20and%20want%20to%20discuss%20a%20project.";
 
   const {
     register,
@@ -148,6 +156,14 @@ export function PortfolioPage() {
     window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setWhatsAppPromptIndex((current) => (current + 1) % whatsAppPrompts.length);
+    }, 2600);
+
+    return () => window.clearInterval(interval);
   }, []);
 
   return (
@@ -524,7 +540,7 @@ export function PortfolioPage() {
                 </p>
                 <p>
                   <Link
-                    href="https://www.linkedin.com"
+                    href="https://www.linkedin.com/in/welcometohassanraza/"
                     target="_blank"
                     className="inline-flex items-center gap-2 text-[#c8ecff] hover:text-[#e0f2fe]"
                   >
@@ -569,14 +585,107 @@ export function PortfolioPage() {
         </SectionWrapper>
       </main>
 
+      <motion.div
+        className="fixed right-4 bottom-4 z-50 sm:right-6 sm:bottom-6"
+        initial={{ opacity: 0, y: 30, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.55, delay: 0.4 }}
+      >
+        <motion.div
+          className="relative"
+          animate={{ y: [0, -8, 0], rotate: [0, -2, 2, 0] }}
+          transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <motion.div
+            className="pointer-events-none absolute right-0 bottom-0 h-20 w-20 rounded-full bg-[#25d366]/25 blur-2xl"
+            animate={{ scale: [1, 1.2, 1], opacity: [0.45, 0.8, 0.45] }}
+            transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="pointer-events-none absolute -top-2 left-2 h-2.5 w-2.5 rounded-full bg-[#7dd3fc]"
+            animate={{ x: [0, 8, -2, 0], y: [0, -10, -2, 0], scale: [1, 1.25, 0.95, 1] }}
+            transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="pointer-events-none absolute top-6 -left-3 h-1.5 w-1.5 rounded-full bg-[#dcfce7]"
+            animate={{ x: [0, -5, 3, 0], y: [0, 10, -6, 0], opacity: [0.45, 1, 0.45] }}
+            transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          <motion.div
+            className="pointer-events-none absolute right-0 bottom-[calc(100%+0.9rem)] w-[220px] sm:w-[250px]"
+            animate={{
+              opacity: isWhatsappOpen ? 1 : 0.94,
+              y: isWhatsappOpen ? 0 : 6,
+              scale: isWhatsappOpen ? 1 : 0.98,
+            }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+          >
+            <div className="relative overflow-hidden rounded-[24px] border border-white/10 bg-[#091018]/90 p-3.5 shadow-[0_20px_60px_rgba(0,0,0,0.42)] backdrop-blur-xl">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(125,211,252,0.16),transparent_36%),radial-gradient(circle_at_bottom_left,rgba(37,211,102,0.14),transparent_30%)]" />
+              <div className="relative">
+                <p className="text-[10px] font-semibold tracking-[0.28em] text-[#86d5ff] uppercase">Whatsapp</p>
+                <motion.p
+                  key={whatsAppPromptIndex}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.22 }}
+                  className="mt-1.5 text-sm font-semibold text-[#f5fbff]"
+                >
+                  {whatsAppPrompts[whatsAppPromptIndex]}
+                </motion.p>
+                <p className="mt-1 text-xs text-[#a9c3d9]">Tap the bubble and say hi. I actually reply.</p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.a
+            href={whatsappHref}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Chat on WhatsApp"
+            onHoverStart={() => setIsWhatsappOpen(true)}
+            onHoverEnd={() => setIsWhatsappOpen(false)}
+            onFocus={() => setIsWhatsappOpen(true)}
+            onBlur={() => setIsWhatsappOpen(false)}
+            whileHover={{ scale: 1.08, rotate: -6 }}
+            whileTap={{ scale: 0.96, rotate: 0 }}
+            className="group relative flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-[26px] border border-white/12 bg-[linear-gradient(160deg,rgba(37,211,102,0.95)_0%,rgba(17,94,89,0.92)_100%)] shadow-[0_18px_45px_rgba(10,16,28,0.5)]"
+          >
+            <span className="absolute inset-0 bg-[radial-gradient(circle_at_30%_25%,rgba(255,255,255,0.24),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.08),transparent_62%)]" />
+            <motion.span
+              className="absolute inset-[6px] rounded-[20px] border border-white/20"
+              animate={{ opacity: [0.45, 0.95, 0.45], scale: [0.98, 1.02, 0.98] }}
+              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.span
+              className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border border-white/15 bg-[#0a0f16] text-[10px] font-bold text-[#86d5ff]"
+              animate={{ y: [0, -4, 0] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            >
+              Hi
+            </motion.span>
+            <motion.span
+              className="absolute inset-0 rounded-[26px] bg-[#25d366]/20"
+              animate={{ scale: [1, 1.18, 1], opacity: [0.18, 0, 0.18] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeOut" }}
+            />
+            <FaWhatsapp className="relative z-10 h-9 w-9 text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.25)] transition-transform duration-300 group-hover:scale-110" />
+          </motion.a>
+        </motion.div>
+      </motion.div>
+
       <footer className="border-t border-[#233246]/70 py-8">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-3 px-4 text-sm text-[#89a4bf] sm:flex-row sm:px-6 lg:px-8">
-          <p>© {year} Hassan Raza. All rights reserved.</p>
+          <div className="text-center sm:text-left">
+            <p>© {year} Hassan Raza. All rights reserved.</p>
+            <p className="mt-1 text-xs text-[#6f8aa5]">Built by Hassan Raza, powered by chai, curiosity, and controlled chaos.</p>
+          </div>
           <div className="flex items-center gap-4">
             <Link href="mailto:hrmughal75@gmail.com" className="hover:text-[#e0f2fe]">
               Email
             </Link>
-            <Link href="https://www.linkedin.com" target="_blank" className="hover:text-[#e0f2fe]">
+            <Link href="https://www.linkedin.com/in/welcometohassanraza/" target="_blank" className="hover:text-[#e0f2fe]">
               LinkedIn
             </Link>
           </div>
