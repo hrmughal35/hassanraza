@@ -20,16 +20,45 @@ const greatVibes = Great_Vibes({
 });
 
 export const metadata: Metadata = {
-  title: "Hassan Raza | ERP Functional Consultant & Full-Stack Developer",
+  metadataBase: new URL("https://hassanrazadev.tech"),
+  title: "Hassan Raza | Odoo Implementer & Functional Technical Consultant",
   description:
-    "Professional portfolio of Hassan Raza - ERP Functional Consultant, Odoo Specialist, and AI Solutions Developer.",
+    "Portfolio of Hassan Raza, an Odoo implementer with expertise in both functional and technical consulting, ERP workflows, automation, and AI solutions.",
   keywords: [
     "Hassan Raza",
-    "ERP Functional Consultant",
+    "Odoo Implementer",
+    "Functional Technical Consultant",
+    "ERP Consultant",
     "Odoo Specialist",
-    "Full Stack Developer",
     "AI Solutions Developer",
+    "Full Stack Developer",
   ],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Hassan Raza | Odoo Implementer & Functional Technical Consultant",
+    description:
+      "Explore the portfolio of Hassan Raza featuring Odoo implementation, ERP consulting, AI solutions, and full-stack development work.",
+    url: "https://hassanrazadev.tech",
+    siteName: "Hassan Raza Portfolio",
+    type: "website",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Hassan Raza portfolio preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Hassan Raza | Odoo Implementer & Functional Technical Consultant",
+    description:
+      "Portfolio of Hassan Raza featuring Odoo implementation, ERP consulting, automation, AI solutions, and full-stack development.",
+    images: ["/opengraph-image"],
+  },
 };
 
 export default function RootLayout({
