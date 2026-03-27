@@ -34,6 +34,7 @@ import {
   ArrowUpRight,
   Bot,
   BriefcaseBusiness,
+  Check,
   Globe,
   GraduationCap,
   Mail,
@@ -41,13 +42,14 @@ import {
   Wrench,
 } from "lucide-react";
 import { FaEnvelope, FaLinkedinIn, FaPhoneAlt, FaWhatsapp } from "react-icons/fa";
-import { navLinks, experiences, projects, skillGroups, education } from "@/components/portfolio/data";
+import { defaultPortfolioContent, type PortfolioContent } from "@/components/portfolio/data";
 import { SectionWrapper } from "@/components/portfolio/section-wrapper";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { PORTFOLIO_CONTENT_UPDATED_EVENT, readPortfolioContentFromStorage } from "@/lib/portfolio-admin";
 
 const container = {
   hidden: { opacity: 0 },
@@ -59,36 +61,10 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.45 } },
 };
 
-const floatTransition = {
-  duration: 8,
-  repeat: Infinity,
-  repeatType: "mirror" as const,
-  ease: "easeInOut" as const,
-};
-
-const welcomeKeywords = ["ERP", "Automation", "AI Systems", "Business Impact", "Odoo"];
 const whatsAppPrompts = [
   "Need Odoo magic? Ping me.",
   "Fast replies. Zero corporate drama.",
   "Let's talk ERP, AI, or chai.",
-];
-
-const socialLinks = [
-  {
-    name: "Email",
-    href: "mailto:hrmughal75@gmail.com",
-    icon: FaEnvelope,
-  },
-  {
-    name: "LinkedIn",
-    href: "https://www.linkedin.com/in/welcometohassanraza/",
-    icon: FaLinkedinIn,
-  },
-  {
-    name: "Phone",
-    href: "tel:+923230701210",
-    icon: FaPhoneAlt,
-  },
 ];
 
 const marqueeItems = [
@@ -130,7 +106,26 @@ export function PortfolioPage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
   const [whatsAppPromptIndex, setWhatsAppPromptIndex] = useState(0);
-  const whatsappHref = "https://wa.me/923230701210?text=Assalamualaikum%20Hassan%2C%20I%20visited%20your%20portfolio%20and%20want%20to%20discuss%20a%20project.";
+  const [portfolioContent, setPortfolioContent] = useState<PortfolioContent>(defaultPortfolioContent);
+  const whatsappNumber = portfolioContent.contact.whatsappNumber.replace(/\D/g, "") || "923230701210";
+  const whatsappHref = `https://wa.me/${whatsappNumber}?text=Assalamualaikum%20Hassan%2C%20I%20visited%20your%20portfolio%20and%20want%20to%20discuss%20a%20project.`;
+  const socialLinks = [
+    {
+      name: "Email",
+      href: `mailto:${portfolioContent.contact.email}`,
+      icon: FaEnvelope,
+    },
+    {
+      name: "LinkedIn",
+      href: portfolioContent.contact.linkedin,
+      icon: FaLinkedinIn,
+    },
+    {
+      name: "Phone",
+      href: `tel:${portfolioContent.contact.phone.replace(/\s+/g, "")}`,
+      icon: FaPhoneAlt,
+    },
+  ];
 
   const {
     register,
@@ -142,8 +137,18 @@ export function PortfolioPage() {
   const year = useMemo(() => new Date().getFullYear(), []);
 
   const onSubmit = (values: ContactValues) => {
-    // Frontend-only form handler; replace with API route when backend is needed.
-    console.log("Contact form submitted", values);
+    const whatsappMessage = [
+      "Assalamualaikum Hassan,",
+      "I visited your portfolio and want to contact you.",
+      "",
+      `Name: ${values.name}`,
+      `Email: ${values.email}`,
+      `Message: ${values.message}`,
+    ].join("\n");
+
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
     reset();
   };
 
@@ -164,6 +169,21 @@ export function PortfolioPage() {
     }, 2600);
 
     return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const syncPortfolioContent = () => {
+      setPortfolioContent(readPortfolioContentFromStorage());
+    };
+
+    syncPortfolioContent();
+    window.addEventListener("storage", syncPortfolioContent);
+    window.addEventListener(PORTFOLIO_CONTENT_UPDATED_EVENT, syncPortfolioContent);
+
+    return () => {
+      window.removeEventListener("storage", syncPortfolioContent);
+      window.removeEventListener(PORTFOLIO_CONTENT_UPDATED_EVENT, syncPortfolioContent);
+    };
   }, []);
 
   return (
@@ -244,7 +264,7 @@ export function PortfolioPage() {
             }`}
           >
             <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-              {navLinks.map((link) => (
+              {portfolioContent.navLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
@@ -259,16 +279,29 @@ export function PortfolioPage() {
       </header>
 
       <main>
-        <section id="home" className="relative mx-auto min-h-[calc(100vh-4rem)] w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-10">
+        <section id="home" className="relative min-h-[calc(100vh-4rem)] w-full py-12 sm:py-14 lg:py-16">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55 }}
-            className="relative"
+            className="relative overflow-hidden bg-[#06080d]"
           >
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-full rounded-[40px] bg-[radial-gradient(circle_at_22%_24%,rgba(125,211,252,0.08),transparent_22%),radial-gradient(circle_at_78%_34%,rgba(56,189,248,0.08),transparent_20%)]" />
-            <div className="relative grid items-center gap-12 lg:min-h-[78vh] lg:grid-cols-[1.08fr_0.92fr]">
-              <motion.div variants={container} initial="hidden" animate="show" className="space-y-7">
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-[70%]">
+              <Image
+                src="/images/about-me.jpeg"
+                alt="Hassan Raza monochrome portrait background"
+                fill
+                sizes="(max-width: 768px) 100vw, 900px"
+                className="object-cover object-[60%_24%] grayscale contrast-125 brightness-90"
+                priority
+              />
+            </div>
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(6,8,13,0.98)_0%,rgba(6,8,13,0.9)_34%,rgba(6,8,13,0.48)_62%,rgba(6,8,13,0.72)_100%)]" />
+            <div className="pointer-events-none absolute inset-y-0 left-[46%] hidden w-px bg-white/10 lg:block" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-full bg-[radial-gradient(circle_at_18%_22%,rgba(125,211,252,0.13),transparent_30%),radial-gradient(circle_at_86%_24%,rgba(255,255,255,0.05),transparent_24%)]" />
+
+            <div className="relative z-10 mx-auto grid min-h-[76vh] w-full max-w-7xl items-end pb-10 lg:min-h-[78vh]">
+              <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 px-4 pt-14 sm:px-6 lg:max-w-[64%] lg:px-10">
                 <motion.div variants={item} className="flex flex-wrap gap-3">
                   {socialLinks.map((link) => {
                     const Icon = link.icon;
@@ -279,7 +312,7 @@ export function PortfolioPage() {
                         href={link.href}
                         target={link.href.startsWith("http") ? "_blank" : undefined}
                         rel={link.href.startsWith("http") ? "noreferrer" : undefined}
-                        className="flex h-12 w-12 items-center justify-center rounded-full border border-[#7dd3fc]/18 bg-white/5 text-[#dff5ff] transition hover:-translate-y-1 hover:border-[#7dd3fc]/40 hover:text-[#7dd3fc]"
+                        className="flex h-11 w-11 items-center justify-center rounded-full border border-white/14 bg-black/30 text-[#dff5ff] transition hover:-translate-y-1 hover:border-[#7dd3fc]/55 hover:text-[#7dd3fc]"
                         aria-label={link.name}
                       >
                         <Icon className="h-4 w-4" />
@@ -289,72 +322,40 @@ export function PortfolioPage() {
                 </motion.div>
 
                 <motion.div variants={item} className="space-y-5">
-                  <p className="text-sm font-medium tracking-[0.28em] text-[#7dd3fc]/85">
-                    ODOO IMPLEMENTER / CONSULTANT
-                  </p>
-                  <h1 className="section-title max-w-2xl text-5xl font-bold leading-[0.92] text-white sm:text-6xl lg:text-[5.4rem]">
-                    I am Hassan Raza
+                  <p className="text-xs font-semibold tracking-[0.34em] text-[#7dd3fc] uppercase">{portfolioContent.hero.eyebrow}</p>
+                  <h1 className="section-title max-w-3xl text-5xl font-bold leading-[0.86] text-white sm:text-6xl lg:text-[6.6rem]">
+                    <span className="block">I AM</span>
+                    <span className="block">{portfolioContent.hero.title.replace(/^I am\s*/i, "")}</span>
                   </h1>
-                  <p className="max-w-2xl text-lg leading-8 text-[#a9c3d9] lg:text-[1.15rem]">
-                    Odoo implementer with expertise in both functional and technical consulting, helping businesses
-                    streamline workflows, automate operations, and build scalable digital systems.
-                  </p>
+                  <p className="max-w-2xl text-base leading-8 text-[#c5d8e8] lg:text-[1.08rem]">{portfolioContent.hero.description}</p>
                 </motion.div>
 
                 <motion.div variants={item} className="flex flex-wrap gap-3">
                   <a href="#projects">
-                    <Button size="lg" className="min-w-40 rounded-full">
+                    <Button size="lg" className="min-w-44 rounded-full">
                       View Portfolio
                     </Button>
                   </a>
                   <a href="#contact">
-                    <Button variant="outline" size="lg" className="min-w-40 rounded-full">
+                    <Button variant="outline" size="lg" className="min-w-44 rounded-full border-white/30 bg-black/30">
                       Contact Me
                     </Button>
                   </a>
                 </motion.div>
 
                 <motion.div variants={item} className="flex flex-wrap gap-2">
-                  {welcomeKeywords.map((keyword, index) => (
+                  {portfolioContent.hero.keywords.map((keyword, index) => (
                     <motion.div
                       key={keyword}
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 + index * 0.08, duration: 0.3 }}
                     >
-                      <Badge variant={index % 2 === 0 ? "default" : "secondary"}>{keyword}</Badge>
+                      <Badge variant={index % 2 === 0 ? "default" : "secondary"} className="border-white/20 bg-black/36">
+                        {keyword}
+                      </Badge>
                     </motion.div>
                   ))}
-                </motion.div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5 }}
-                className="relative mx-auto flex w-full max-w-[560px] items-end justify-center lg:justify-end"
-              >
-                <span className="pointer-events-none absolute bottom-8 left-1/2 z-0 -translate-x-1/2 text-[5.5rem] font-semibold italic tracking-tight text-white/6 sm:text-[7.5rem]">
-                  Hassan
-                </span>
-                <motion.div animate={{ y: [0, -8, 0] }} transition={floatTransition} className="relative z-10 w-full">
-                  <div className="absolute inset-x-10 bottom-3 h-24 rounded-full bg-[#7dd3fc]/12 blur-3xl" />
-                  <motion.div
-                    className="relative h-[600px] overflow-hidden [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_72%,transparent_100%),linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)] [mask-composite:intersect] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_72%,transparent_100%),linear-gradient(to_right,transparent_0%,black_12%,black_88%,transparent_100%)] [-webkit-mask-composite:source-in]"
-                    whileHover={{ scale: 1.015 }}
-                    transition={{ duration: 0.35 }}
-                  >
-                    <Image
-                      src="/images/hassanraza.jpeg"
-                      alt="Hassan Raza portrait"
-                      fill
-                      sizes="(max-width: 768px) 90vw, 560px"
-                      className="object-cover object-center"
-                      priority
-                    />
-                    <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(6,8,13,0.03),rgba(6,8,13,0.08)_50%,rgba(6,8,13,0.2)_78%,rgba(6,8,13,0.48)_100%)]" />
-                  </motion.div>
                 </motion.div>
               </motion.div>
             </div>
@@ -387,32 +388,77 @@ export function PortfolioPage() {
         <SectionWrapper
           id="about"
           title="About Me"
-          subtitle="ERP-focused consultant and developer with hands-on experience in Odoo implementation, automation, and modern web engineering."
+          subtitle={portfolioContent.about.subtitle}
         >
           <motion.div
             variants={container}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.2 }}
-            className="grid gap-6 md:grid-cols-3"
+            className="grid items-center gap-12 lg:grid-cols-[1.04fr_0.96fr]"
           >
-            {[
-              "1.5+ years of Odoo ERP consulting and implementation experience.",
-              "Strong understanding of manufacturing and business workflow optimization.",
-              "Built AI chatbot assistants and business automation solutions.",
-            ].map((point) => (
-              <motion.div key={point} variants={item}>
-                <Card className="h-full transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(56,189,248,0.16)]">
-                  <CardContent className="pt-6 text-[#dff5ff]">{point}</CardContent>
-                </Card>
-              </motion.div>
-            ))}
+            <motion.div variants={item} className="relative space-y-7">
+              <div className="pointer-events-none absolute -left-10 top-1/2 h-44 w-44 -translate-y-1/2 rounded-full bg-[#7dd3fc]/8 blur-3xl" />
+
+              <p className="text-xs font-semibold tracking-[0.28em] text-[#7dd3fc] uppercase">About Me</p>
+              <h3 className="section-title max-w-2xl text-3xl font-semibold leading-tight text-white sm:text-4xl lg:text-[2.7rem]">
+                Are you looking for premium ERP execution with technical depth? Let&apos;s build it right.
+              </h3>
+              <p className="max-w-2xl text-base leading-8 text-[#a9c3d9]">{portfolioContent.about.subtitle}</p>
+
+              <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+                {portfolioContent.about.highlights.map((point) => (
+                  <div key={point} className="group flex items-start gap-3 text-sm text-[#dff5ff]">
+                    <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-[#7dd3fc]/35 bg-[#38bdf8]/12 text-[#7dd3fc] transition group-hover:border-[#7dd3fc]/60 group-hover:bg-[#38bdf8]/18">
+                      <Check className="h-3.5 w-3.5" />
+                    </span>
+                    <span>{point}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4">
+                <a href="#contact" className="inline-flex">
+                  <Button className="rounded-full px-7">
+                    More About
+                    <ArrowUpRight className="h-4 w-4" />
+                  </Button>
+                </a>
+                <span className="rounded-full border border-[#7dd3fc]/25 bg-[#0c1623]/85 px-4 py-2 text-xs tracking-[0.16em] text-[#a9c3d9] uppercase">
+                  Functional + Technical
+                </span>
+              </div>
+            </motion.div>
+
+            <motion.div variants={item} className="relative mx-auto w-full max-w-[540px]">
+              <div className="pointer-events-none absolute -top-9 right-8 z-30 rounded-full border border-[#7dd3fc]/35 bg-[#0a111a]/96 px-6 py-3 shadow-[0_20px_55px_rgba(0,0,0,0.42)] backdrop-blur-xl">
+                <span className="mr-2 text-2xl font-extrabold text-[#dff5ff]">02+</span>
+                <span className="text-[10px] font-semibold tracking-[0.16em] text-[#a9c3d9] uppercase">Years Building Solutions</span>
+              </div>
+
+              <div className="relative overflow-hidden rounded-[38px] border border-[#7dd3fc]/22 bg-[radial-gradient(circle_at_72%_20%,rgba(125,211,252,0.30),transparent_32%),linear-gradient(165deg,#0a111a_0%,#06080d_70%)] p-4 shadow-[0_26px_65px_rgba(0,0,0,0.34)] sm:p-6">
+                <div className="absolute top-1/2 -left-5 h-12 w-12 -translate-y-1/2 rounded-full border border-[#7dd3fc]/45 bg-[#0b1725]/95 shadow-[0_0_38px_rgba(125,211,252,0.3)]" />
+                <div className="absolute -right-12 -bottom-12 h-40 w-40 rounded-full bg-[#38bdf8]/22 blur-3xl" />
+                <div className="absolute -left-16 top-14 h-24 w-24 rounded-full bg-[#7dd3fc]/14 blur-2xl" />
+
+                <div className="relative overflow-hidden rounded-[30px] border border-[#7dd3fc]/20 shadow-[0_12px_36px_rgba(0,0,0,0.22)]">
+                  <Image
+                    src="/images/about-me.jpeg"
+                    alt="About Hassan Raza"
+                    width={820}
+                    height={980}
+                    className="h-[520px] w-full object-cover object-center"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(6,8,13,0.02),rgba(6,8,13,0.16)_54%,rgba(6,8,13,0.44)_100%)]" />
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         </SectionWrapper>
 
         <SectionWrapper id="experience" title="Experience">
           <div className="relative space-y-6 before:absolute before:left-3 before:top-2 before:h-[calc(100%-1rem)] before:w-px before:bg-[#233246]">
-            {experiences.map((exp) => (
+            {portfolioContent.experiences.map((exp) => (
               <motion.div
                 key={exp.role}
                 initial={{ opacity: 0, x: -20 }}
@@ -451,7 +497,7 @@ export function PortfolioPage() {
             viewport={{ once: true, amount: 0.2 }}
             className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
           >
-            {projects.map((project) => (
+            {portfolioContent.projects.map((project) => (
               <motion.div key={project.title} variants={item}>
                 <motion.div whileHover={{ y: -6 }}>
                   <Card className="h-full transition-transform duration-300 hover:shadow-[0_16px_40px_rgba(56,189,248,0.15)]">
@@ -480,7 +526,7 @@ export function PortfolioPage() {
 
         <SectionWrapper id="skills" title="Skills">
           <div className="grid gap-6 md:grid-cols-2">
-            {skillGroups.map((group) => (
+            {portfolioContent.skillGroups.map((group) => (
               <motion.div key={group.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                 <Card className="h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(56,189,248,0.14)]">
                   <CardHeader className="flex flex-row items-center gap-2">
@@ -502,7 +548,7 @@ export function PortfolioPage() {
 
         <SectionWrapper id="education" title="Education & Certifications">
           <div className="grid gap-6 md:grid-cols-2">
-            {education.map((itemValue) => (
+            {portfolioContent.education.map((itemValue) => (
               <motion.div key={itemValue.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                 <Card className="h-full">
                   <CardHeader className="flex flex-row items-start gap-3">
@@ -528,19 +574,19 @@ export function PortfolioPage() {
               <CardContent className="space-y-4 text-sm text-[#dff5ff]">
                 <p className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-[#7dd3fc]" />
-                  <a href="mailto:hrmughal75@gmail.com" className="hover:text-white">
-                    hrmughal75@gmail.com
+                  <a href={`mailto:${portfolioContent.contact.email}`} className="hover:text-white">
+                    {portfolioContent.contact.email}
                   </a>
                 </p>
                 <p className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-[#7dd3fc]" />
-                  <a href="tel:+923230701210" className="hover:text-white">
-                    +92 323 0701210
+                  <a href={`tel:${portfolioContent.contact.phone.replace(/\s+/g, "")}`} className="hover:text-white">
+                    {portfolioContent.contact.phone}
                   </a>
                 </p>
                 <p>
                   <Link
-                    href="https://www.linkedin.com/in/welcometohassanraza/"
+                    href={portfolioContent.contact.linkedin}
                     target="_blank"
                     className="inline-flex items-center gap-2 text-[#c8ecff] hover:text-[#e0f2fe]"
                   >
@@ -573,11 +619,10 @@ export function PortfolioPage() {
                     ) : null}
                   </div>
                   <Button type="submit" className="w-full">
-                    Send Message
+                    Send via WhatsApp
                   </Button>
-                  {isSubmitSuccessful ? (
-                    <p className="text-xs text-[#7dd3fc]">Message validated successfully. Ready for backend integration.</p>
-                  ) : null}
+                  <p className="text-xs text-[#7dd3fc]">This opens WhatsApp with your message pre-filled.</p>
+                  {isSubmitSuccessful ? <p className="text-xs text-[#a9c3d9]">WhatsApp opened in a new tab.</p> : null}
                 </form>
               </CardContent>
             </Card>
@@ -593,38 +638,44 @@ export function PortfolioPage() {
       >
         <motion.div
           className="relative"
-          animate={{ y: [0, -8, 0], rotate: [0, -2, 2, 0] }}
-          transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ y: [0, -6, 0] }}
+          transition={{ duration: 5.4, repeat: Infinity, ease: "easeInOut" }}
         >
           <motion.div
-            className="pointer-events-none absolute right-0 bottom-0 h-20 w-20 rounded-full bg-[#25d366]/25 blur-2xl"
-            animate={{ scale: [1, 1.2, 1], opacity: [0.45, 0.8, 0.45] }}
-            transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+            className="pointer-events-none absolute right-0 bottom-0 h-24 w-24 rounded-full bg-[#25d366]/28 blur-2xl"
+            animate={{ scale: [1, 1.25, 1], opacity: [0.38, 0.74, 0.38] }}
+            transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
-            className="pointer-events-none absolute -top-2 left-2 h-2.5 w-2.5 rounded-full bg-[#7dd3fc]"
-            animate={{ x: [0, 8, -2, 0], y: [0, -10, -2, 0], scale: [1, 1.25, 0.95, 1] }}
-            transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+            className="pointer-events-none absolute -top-2 left-0 h-2 w-2 rounded-full bg-[#86d5ff]"
+            animate={{ x: [0, 10, -1, 0], y: [0, -8, -2, 0], scale: [1, 1.2, 0.95, 1] }}
+            transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
-            className="pointer-events-none absolute top-6 -left-3 h-1.5 w-1.5 rounded-full bg-[#dcfce7]"
-            animate={{ x: [0, -5, 3, 0], y: [0, 10, -6, 0], opacity: [0.45, 1, 0.45] }}
+            className="pointer-events-none absolute top-8 -left-3 h-1.5 w-1.5 rounded-full bg-[#dcfce7]"
+            animate={{ x: [0, -6, 3, 0], y: [0, 8, -5, 0], opacity: [0.45, 1, 0.45] }}
             transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
           />
 
           <motion.div
-            className="pointer-events-none absolute right-0 bottom-[calc(100%+0.9rem)] w-[220px] sm:w-[250px]"
+            className="pointer-events-none absolute right-0 bottom-[calc(100%+0.95rem)] hidden w-[260px] lg:block"
             animate={{
-              opacity: isWhatsappOpen ? 1 : 0.94,
-              y: isWhatsappOpen ? 0 : 6,
+              opacity: isWhatsappOpen ? 1 : 0,
+              y: isWhatsappOpen ? 0 : 10,
               scale: isWhatsappOpen ? 1 : 0.98,
             }}
             transition={{ duration: 0.25, ease: "easeOut" }}
           >
-            <div className="relative overflow-hidden rounded-[24px] border border-white/10 bg-[#091018]/90 p-3.5 shadow-[0_20px_60px_rgba(0,0,0,0.42)] backdrop-blur-xl">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(125,211,252,0.16),transparent_36%),radial-gradient(circle_at_bottom_left,rgba(37,211,102,0.14),transparent_30%)]" />
-              <div className="relative">
-                <p className="text-[10px] font-semibold tracking-[0.28em] text-[#86d5ff] uppercase">Whatsapp</p>
+            <div className="relative overflow-hidden rounded-[22px] border border-white/12 bg-[#0a121d]/92 p-4 shadow-[0_24px_62px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(125,211,252,0.16),transparent_36%),radial-gradient(circle_at_bottom_left,rgba(37,211,102,0.16),transparent_30%)]" />
+              <div className="relative space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-semibold tracking-[0.28em] text-[#86d5ff] uppercase">Whatsapp</p>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[#25d366]/35 bg-[#25d366]/12 px-2 py-0.5 text-[10px] font-medium text-[#dcfce7]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#25d366]" />
+                    Online
+                  </span>
+                </div>
                 <motion.p
                   key={whatsAppPromptIndex}
                   initial={{ opacity: 0, y: 8 }}
@@ -634,7 +685,7 @@ export function PortfolioPage() {
                 >
                   {whatsAppPrompts[whatsAppPromptIndex]}
                 </motion.p>
-                <p className="mt-1 text-xs text-[#a9c3d9]">Tap the bubble and say hi. I actually reply.</p>
+                <p className="text-xs text-[#a9c3d9]">Premium support for ERP, automation, and product delivery.</p>
               </div>
             </div>
           </motion.div>
@@ -648,29 +699,29 @@ export function PortfolioPage() {
             onHoverEnd={() => setIsWhatsappOpen(false)}
             onFocus={() => setIsWhatsappOpen(true)}
             onBlur={() => setIsWhatsappOpen(false)}
-            whileHover={{ scale: 1.08, rotate: -6 }}
+            whileHover={{ scale: 1.08, rotate: -4 }}
             whileTap={{ scale: 0.96, rotate: 0 }}
-            className="group relative flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-[26px] border border-white/12 bg-[linear-gradient(160deg,rgba(37,211,102,0.95)_0%,rgba(17,94,89,0.92)_100%)] shadow-[0_18px_45px_rgba(10,16,28,0.5)]"
+            className="group relative flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-[24px] border border-white/15 bg-[linear-gradient(160deg,rgba(37,211,102,0.98)_0%,rgba(15,89,82,0.94)_100%)] shadow-[0_22px_58px_rgba(10,16,28,0.58)]"
           >
-            <span className="absolute inset-0 bg-[radial-gradient(circle_at_30%_25%,rgba(255,255,255,0.24),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.08),transparent_62%)]" />
+            <span className="absolute inset-0 bg-[radial-gradient(circle_at_30%_24%,rgba(255,255,255,0.28),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.1),transparent_62%)]" />
             <motion.span
-              className="absolute inset-[6px] rounded-[20px] border border-white/20"
-              animate={{ opacity: [0.45, 0.95, 0.45], scale: [0.98, 1.02, 0.98] }}
-              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-[6px] rounded-[18px] border border-white/24"
+              animate={{ opacity: [0.4, 0.9, 0.4], scale: [0.98, 1.03, 0.98] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.span
-              className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border border-white/15 bg-[#0a0f16] text-[10px] font-bold text-[#86d5ff]"
-              animate={{ y: [0, -4, 0] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -top-1 -right-1 flex h-6 min-w-6 items-center justify-center rounded-full border border-white/15 bg-[#0a0f16] px-1 text-[9px] font-semibold text-[#86d5ff]"
+              animate={{ y: [0, -3, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
-              Hi
+              PRO
             </motion.span>
             <motion.span
-              className="absolute inset-0 rounded-[26px] bg-[#25d366]/20"
-              animate={{ scale: [1, 1.18, 1], opacity: [0.18, 0, 0.18] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: "easeOut" }}
+              className="absolute inset-0 rounded-[24px] bg-[#25d366]/20"
+              animate={{ scale: [1, 1.16, 1], opacity: [0.16, 0, 0.16] }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: "easeOut" }}
             />
-            <FaWhatsapp className="relative z-10 h-9 w-9 text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.25)] transition-transform duration-300 group-hover:scale-110" />
+            <FaWhatsapp className="relative z-10 h-8.5 w-8.5 text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.28)] transition-transform duration-300 group-hover:scale-110" />
           </motion.a>
         </motion.div>
       </motion.div>
@@ -679,13 +730,13 @@ export function PortfolioPage() {
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-3 px-4 text-sm text-[#89a4bf] sm:flex-row sm:px-6 lg:px-8">
           <div className="text-center sm:text-left">
             <p>© {year} Hassan Raza. All rights reserved.</p>
-            <p className="mt-1 text-xs text-[#6f8aa5]">Built by Hassan Raza, powered by chai, curiosity, and controlled chaos.</p>
+            <p className="mt-1 text-xs text-[#6f8aa5]">{portfolioContent.footer.tagline}</p>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="mailto:hrmughal75@gmail.com" className="hover:text-[#e0f2fe]">
+            <Link href={`mailto:${portfolioContent.contact.email}`} className="hover:text-[#e0f2fe]">
               Email
             </Link>
-            <Link href="https://www.linkedin.com/in/welcometohassanraza/" target="_blank" className="hover:text-[#e0f2fe]">
+            <Link href={portfolioContent.contact.linkedin} target="_blank" className="hover:text-[#e0f2fe]">
               LinkedIn
             </Link>
           </div>
